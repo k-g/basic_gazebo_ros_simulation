@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+	<!-- XACRO is actually URDF with additional capabilities for thinks like macros -->
+	<robot name="basic" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<!-- Variables we can reuse-->
+	<xacro:property name="height" value="0.5" />
+	<xacro:property name="radius" value="0.1" />
+	<xacro:property name="elevation" value="0.1" />
+	<xacro:property name="inertia" value="50" />
+	<xacro:property name="camera_size" value="0.1" />
+
+
+	<!-- Links: world -> base_footprint -> base_link -->
+
+	<!-- Used for fixing robot to Gazebo 'base_link' -->
+	
+
+	<!-- For some reason this prevents it from moving around then world. -->
+	<!-- 
+	<link name="world"/>
+
+	<joint name="fixed" type="fixed">
+		<parent link="world"/>
+		<child link="base_footprint"/>
+	</joint> 
+	-->
+
+
+	<material name="chassis_color">
+		<color rgba="0 0 1 1"/>
+	</material>
+
+	<material name="camera_color">
+		<color rgba="1 0 0 1"/>
+	</material>
+
+
+
+	<!-- This is the robot's footprint on the ground itself and has no elevation -->
+	  <!-- root link, on the ground just below the model origin -->
+	<link name="base_footprint">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<box size="0.001 0.001 0.001" />
+			</geometry>
+		</visual>
+	</link>
+
+	<!-- Joins base_link to ground footprint-->
+	<joint name="base_link_joint" type="fixed">
+		<origin xyz="0.0 0 ${elevation}" rpy="0 0 0" />
+		<parent link="base_footprint"/>
+		<child link="base_link" />
+	</joint>
+
+
+	<!-- This is the main robot model -->
+	<link name="base_link">
+		<visual>
+		 <origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
+		  <geometry>
+		    <cylinder length="${height}" radius="${radius}"/>
+		  </geometry>
+		   <material name="chassis_color"/>
+		</visual>
+
+
+		<collision>
+		  <origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
+		  <geometry>
+		    <cylinder length="${height}" radius="${radius}"/>
+		  </geometry>
+		</collision>
+
+
+		<inertial>
+		  <origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
+		  <mass value="1"/>
+		  <inertia
+		    ixx="${inertia}" ixy="0.0" ixz="0.0"
+		    iyy="${inertia}" iyz="0.0"
+		    izz="${inertia}"/>
+		</inertial>
+  </link>
+
+ <!-- The navigation camera -->
+  <joint name="camera_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0 0 ${height + elevation}" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+  </joint>
+
+  <!-- Camera -->
+  <link name="camera_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+    	<box size="${camera_size} ${camera_size} ${camera_size}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+    	<box size="${camera_size} ${camera_size} ${camera_size}"/>
+      </geometry>
+      <material name="camera_color"/>
+    </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
+
+
+  <!-- lets us move the robot around the sim using the navstack commands -->
+  <gazebo>
+    <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
+      <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <odometryRate>20.0</odometryRate>
+      <robotBaseFrame>base_footprint</robotBaseFrame>
+    </plugin>
+  </gazebo>
+
+
+   <!-- Camera Plugin -->
+  <gazebo reference="camera_link">
+    <sensor type="camera" name="camera1"> <!-- can be any name, but must be unique -->
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise is sampled independently per pixel on each frame.
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1]. -->
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>basic/camera1</cameraName> <!-- will set name space of topics -->
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName> <!-- transform link -->
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>
