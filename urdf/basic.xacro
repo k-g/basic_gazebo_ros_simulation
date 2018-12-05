@@ -16,11 +16,35 @@
 	
 
 	<!-- For some reason this prevents it from moving around then world. -->
-	<!-- 
-	<link name="world"/>
 
-	<joint name="fixed" type="fixed">
+<!--
+	<link name="world"/>
+	<link name="odom"/>
+
+
+	 <joint name="world_to_odom" type="fixed">
+	 	<origin xyz="0 0 0" rpy="0 0 0" />
 		<parent link="world"/>
+		<child link="odom"/>
+	</joint> 
+
+	<joint name="odom_to_baselink" type="fixed">
+			<parent link="odom"/>
+		<child link="base_link"/>
+	</joint> 
+-->
+
+	 <!--
+	<link name="world"/>
+	<link name="wheel_odom"/>
+
+	<joint name="world_to_odom" type="fixed">
+		<parent link="world"/>
+		<child link="wheel_odom"/>
+	</joint> 
+
+	<joint name="odom_to_base_footprint" type="fixed">
+		<parent link="wheel_odom"/>
 		<child link="base_footprint"/>
 	</joint> 
 	-->
@@ -38,21 +62,21 @@
 
 	<!-- This is the robot's footprint on the ground itself and has no elevation -->
 	  <!-- root link, on the ground just below the model origin -->
-	<link name="base_footprint">
+<!-- 	<link name="base_footprint">
 		<visual>
 			<origin xyz="0 0 0" rpy="0 0 0" />
 			<geometry>
 				<box size="0.001 0.001 0.001" />
 			</geometry>
 		</visual>
-	</link>
+	</link> -->
 
 	<!-- Joins base_link to ground footprint-->
-	<joint name="base_link_joint" type="fixed">
+<!-- 	<joint name="base_link_joint" type="fixed">
 		<origin xyz="0.0 0 ${elevation}" rpy="0 0 0" />
 		<parent link="base_footprint"/>
 		<child link="base_link" />
-	</joint>
+	</joint> -->
 
 
 	<!-- This is the main robot model -->
@@ -89,11 +113,11 @@
     <axis xyz="0 1 0" />
     <origin xyz="0 0 ${height + elevation}" rpy="0 0 0"/>
     <parent link="base_link"/>
-    <child link="camera_link"/>
+    <child link="camera_mount"/>
   </joint>
 
   <!-- Camera -->
-  <link name="camera_link">
+  <link name="camera_mount">
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -125,13 +149,13 @@
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>
       <odometryRate>20.0</odometryRate>
-      <robotBaseFrame>base_footprint</robotBaseFrame>
+      <robotBaseFrame>base_link</robotBaseFrame>
     </plugin>
   </gazebo>
 
 
    <!-- Camera Plugin -->
-  <gazebo reference="camera_link">
+  <gazebo reference="camera_mount">
     <sensor type="camera" name="camera1"> <!-- can be any name, but must be unique -->
       <update_rate>30.0</update_rate>
       <camera name="head">
@@ -160,7 +184,7 @@
         <cameraName>basic/camera1</cameraName> <!-- will set name space of topics -->
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-        <frameName>camera_link</frameName> <!-- transform link -->
+        <frameName>camera_mount</frameName> <!-- transform link -->
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
