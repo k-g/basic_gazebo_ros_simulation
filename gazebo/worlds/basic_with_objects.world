@@ -65,9 +65,9 @@
     <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
     <atmosphere type='adiabatic'/>
     <physics name='default_physics' default='0' type='ode'>
-      <max_step_size>0.001</max_step_size>
+      <max_step_size>0.01</max_step_size>
       <real_time_factor>1</real_time_factor>
-      <real_time_update_rate>1000</real_time_update_rate>
+      <real_time_update_rate>100</real_time_update_rate>
     </physics>
     <scene>
       <ambient>0.4 0.4 0.4 1</ambient>
@@ -536,10 +536,10 @@
       <pose frame=''>-5.02287 0.027194 0 0 -0 0</pose>
     </model>
     <state world_name='default'>
-      <sim_time>196 102000000</sim_time>
-      <real_time>16 64664929</real_time>
-      <wall_time>1543970949 260901514</wall_time>
-      <iterations>15774</iterations>
+      <sim_time>0</sim_time>
+      <real_time>0</real_time>
+
+      <iterations>0</iterations>
       <model name='basic'>
         <pose frame=''>-0 -0 -0.10001 0 -0 0</pose>
         <scale>1 1 1</scale>

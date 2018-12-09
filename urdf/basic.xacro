@@ -8,46 +8,7 @@
 	<xacro:property name="elevation" value="0.1" />
 	<xacro:property name="inertia" value="50" />
 	<xacro:property name="camera_size" value="0.1" />
-
-
-	<!-- Links: world -> base_footprint -> base_link -->
-
-	<!-- Used for fixing robot to Gazebo 'base_link' -->
-	
-
-	<!-- For some reason this prevents it from moving around then world. -->
-
-<!--
-	<link name="world"/>
-	<link name="odom"/>
-
-
-	 <joint name="world_to_odom" type="fixed">
-	 	<origin xyz="0 0 0" rpy="0 0 0" />
-		<parent link="world"/>
-		<child link="odom"/>
-	</joint> 
-
-	<joint name="odom_to_baselink" type="fixed">
-			<parent link="odom"/>
-		<child link="base_link"/>
-	</joint> 
--->
-
-	 <!--
-	<link name="world"/>
-	<link name="wheel_odom"/>
-
-	<joint name="world_to_odom" type="fixed">
-		<parent link="world"/>
-		<child link="wheel_odom"/>
-	</joint> 
-
-	<joint name="odom_to_base_footprint" type="fixed">
-		<parent link="wheel_odom"/>
-		<child link="base_footprint"/>
-	</joint> 
-	-->
+	<xacro:property name="M_PI" value="3.14159265358979323846264338327950288" />
 
 
 	<material name="chassis_color">
@@ -58,31 +19,34 @@
 		<color rgba="1 0 0 1"/>
 	</material>
 
+<!--
 
+	<link name="map"/>
+	<link name="odom"/>
 
-	<!-- This is the robot's footprint on the ground itself and has no elevation -->
-	  <!-- root link, on the ground just below the model origin -->
-<!-- 	<link name="base_footprint">
-		<visual>
-			<origin xyz="0 0 0" rpy="0 0 0" />
-			<geometry>
-				<box size="0.001 0.001 0.001" />
-			</geometry>
-		</visual>
-	</link> -->
+ 
+  <joint name="map_joint" type="fixed">
+    <axis xyz="0 0 0" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="map"/>
+    <child link="odom"/>
+  </joint>
+-->
 
-	<!-- Joins base_link to ground footprint-->
-<!-- 	<joint name="base_link_joint" type="fixed">
-		<origin xyz="0.0 0 ${elevation}" rpy="0 0 0" />
-		<parent link="base_footprint"/>
-		<child link="base_link" />
-	</joint> -->
+ 
+<!--   <joint name="odom_joint" type="fixed">
+    <axis xyz="0 0 0" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="odom"/>
+    <child link="base_link"/>
+  </joint>
+ -->
 
 
 	<!-- This is the main robot model -->
 	<link name="base_link">
 		<visual>
-		 <origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
+		 <origin xyz="0 0 ${height/2 + elevation}" rpy="0 0 0"/>
 		  <geometry>
 		    <cylinder length="${height}" radius="${radius}"/>
 		  </geometry>
@@ -91,7 +55,7 @@
 
 
 		<collision>
-		  <origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
+		  <origin xyz="0 0 ${height/2 + elevation}" rpy="0 0 0"/>
 		  <geometry>
 		    <cylinder length="${height}" radius="${radius}"/>
 		  </geometry>
@@ -113,11 +77,43 @@
     <axis xyz="0 1 0" />
     <origin xyz="0 0 ${height + elevation}" rpy="0 0 0"/>
     <parent link="base_link"/>
-    <child link="camera_mount"/>
+    <child link="camera"/>
   </joint>
 
   <!-- Camera -->
-  <link name="camera_mount">
+  <link name="camera">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+    	<box size="${camera_size} ${camera_size} ${camera_size}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+    	<box size="${camera_size} ${camera_size} ${camera_size}"/>
+      </geometry>
+      <material name="camera_color"/>
+    </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
+   <!-- The depth camera -->
+  <joint name="depth_camera_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0 0 ${camera_size}" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="depth_camera"/>
+  </joint>
+
+  <!-- Depth Camera -->
+  <link name="depth_camera">
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -141,6 +137,38 @@
   </link>
 
 
+   <!-- The laser -->
+  <joint name="laser_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="laser_link"/>
+  </joint>
+
+  <!-- Depth Camera -->
+  <link name="laser_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+    	<box size="${camera_size} ${camera_size} ${camera_size}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+    	<box size="${camera_size} ${camera_size} ${camera_size}"/>
+      </geometry>
+      <material name="camera_color"/>
+    </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
 
   <!-- lets us move the robot around the sim using the navstack commands -->
   <gazebo>
@@ -148,14 +176,15 @@
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>
-      <odometryRate>20.0</odometryRate>
+      <odometryRate>30.0</odometryRate>
       <robotBaseFrame>base_link</robotBaseFrame>
     </plugin>
   </gazebo>
 
 
+
    <!-- Camera Plugin -->
-  <gazebo reference="camera_mount">
+  <gazebo reference="camera">
     <sensor type="camera" name="camera1"> <!-- can be any name, but must be unique -->
       <update_rate>30.0</update_rate>
       <camera name="head">
@@ -180,17 +209,101 @@
       </camera>
       <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
         <alwaysOn>true</alwaysOn>
-        <updateRate>0.0</updateRate>
+        <updateRate>30.0</updateRate>
         <cameraName>basic/camera1</cameraName> <!-- will set name space of topics -->
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-        <frameName>camera_mount</frameName> <!-- transform link -->
+        <frameName>camera</frameName> <!-- transform link -->
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
         <distortionK3>0.0</distortionK3>
         <distortionT1>0.0</distortionT1>
         <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Depth camera sensor -->
+
+  <!--
+  <gazebo reference="depth_camera">
+  	<sensor type="depth" name="depth_frame_sensor">
+      <always_on>true</always_on>
+      <update_rate>10.0</update_rate>
+      <camera>
+        <horizontal_fov>${60.0*M_PI/180.0}</horizontal_fov>
+        <image>
+          <format>R8G8B8</format>
+          <width>640</width>
+          <height>480</height>
+        </image>
+        <clip>
+          <near>0.01</near>
+          <far>5</far>
+        </clip>
+	</camera>
+  <plugin name="depth_camera_controller" filename="libgazebo_ros_openni_kinect.so">
+    <baseline>0.2</baseline>
+    <alwaysOn>true</alwaysOn>
+    <updateRate>0</updateRate>
+    <cameraName>depth_camera</cameraName>
+    <imageTopicName>/simulation/depth_camera/image_raw</imageTopicName>
+    <cameraInfoTopicName>/simulation/depth_camera/camera_info</cameraInfoTopicName>
+    <depthImageTopicName>/simulation/depth_camera/depth/image_raw</depthImageTopicName>
+    <depthImageInfoTopicName>/simulation/depth_camera//depth/camera_info</depthImageInfoTopicName>
+    <pointCloudTopicName>/simulation/depth_camera/points2</pointCloudTopicName>
+    <frameName>depth_camera</frameName>
+    <pointCloudCutoff>0.5</pointCloudCutoff>
+    <distortionK1>0.00000001</distortionK1>
+    <distortionK2>0.00000001</distortionK2>
+    <distortionK3>0.00000001</distortionK3>
+    <distortionT1>0.00000001</distortionT1>
+    <distortionT2>0.00000001</distortionT2>
+    <CxPrime>0</CxPrime>
+    <Cx>0</Cx>
+    <Cy>0</Cy>
+    <focalLength>0</focalLength>
+    <hackBaseline>0</hackBaseline>
+  </plugin>
+</sensor>
+</gazebo>
+-->
+
+
+  <!-- hokuyo -->
+  <gazebo reference="laser_link">
+    <sensor type="ray" name="head_hokuyo_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <update_rate>30</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-1.570796</min_angle>
+            <max_angle>1.570796</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>30.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+        <topicName>/simulation/laser/scan</topicName>
+        <frameName>laser_link</frameName>
       </plugin>
     </sensor>
   </gazebo>
