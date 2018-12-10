@@ -17,8 +17,8 @@
     <arg name="physics" default="ode"/>
     <arg name="verbose" default="false"/>
     <!-- <arg name="world_name" default="worlds/empty.world"/> -->
-    <arg name="world_name" default="$(find simulator)/gazebo/worlds/basic_with_objects.world"/> <!-- Note: the world_name is with respect to GAZEBO_RESOURCE_PATH environmental variable -->
-    <arg name="robot_xacro" default="$(find simulator)/urdf/basic.xacro"/> <!-- Note: the world_name is with respect to GAZEBO_RESOURCE_PATH environmental variable -->
+    <arg name="world_name" default="$(find sim_top)/gazebo/worlds/basic_with_objects.world"/> <!-- Note: the world_name is with respect to GAZEBO_RESOURCE_PATH environmental variable -->
+    <arg name="robot_xacro" default="$(find sim_top)/urdf/basic.xacro"/> <!-- Note: the world_name is with respect to GAZEBO_RESOURCE_PATH environmental variable -->
     <arg name="respawn_gazebo" default="false"/>
     <arg name="use_clock_frequency" default="false"/>
     <arg name="pub_clock_frequency" default="100"/>
